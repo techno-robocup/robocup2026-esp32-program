@@ -100,6 +100,31 @@ bool parseMotorCommand(const char *message, int *values, int max_values) {
   return idx == max_values;
 }
 
+bool parseArmCommand(const char *message, int *armValue, bool *wire) {
+  const char *ptr = message;
+  int val = 0;
+  while (*ptr == ' ')
+    ptr++;
+  if (!*ptr)
+    return false;
+
+  while (*ptr >= '0' && *ptr <= '9') {
+    val = val * 10 + (*ptr - '0');
+    ptr++;
+  }
+  *armValue = val;
+  while (*ptr == ' ')
+    ptr++;
+  if (*ptr == '1')
+    *wire = true;
+  else if (*ptr == '0')
+    *wire = false;
+  else
+    return false;
+
+  return true;
+}
+
 void setup() {
   serial.init();
   pinMode(button_pin, INPUT);
@@ -164,17 +189,19 @@ void loop() {
       snprintf(response, sizeof(response), "OK %d %d %d %d", tyre_values[0],
                tyre_values[1], tyre_values[2], tyre_values[3]);
       serial.sendMessage(Message(msg.getId(), String(response)));
+    } else {
+      snprintf(response, sizeof(response), "ERR: MOTOR");
+      serial.sendMessage(Message(msg.getId(), String(message)));
     }
   } else if (message.startsWith("Rescue ")) {
-    const char *rescue_data = message.c_str() + 7; // Skip "Rescue "
-    if (strlen(rescue_data) >= 5) {
-      // Parse arm_angle (4 digits) and wire (1 digit)
-      char angle_str[5] = {0, 0, 0, 0, 0};
-      strncpy(angle_str, rescue_data, 4);
-      arm_value = atoi(angle_str);
-      wire = (rescue_data[4] == '1');
+    const char *rescue = message.c_str() + 7;
+
+    if (parseArmCommand(rescue, &arm_value, &wire)) {
       arm.arm_set_position(arm_value, wire);
       snprintf(response, sizeof(response), "OK %d %d", arm_value, (int)wire);
+      serial.sendMessage(Message(msg.getId(), String(response)));
+    } else {
+      snprintf(response, sizeof(response), "ERR: Rescue");
       serial.sendMessage(Message(msg.getId(), String(response)));
     }
   } else if (message.startsWith("GET button")) {
