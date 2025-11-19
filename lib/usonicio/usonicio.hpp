@@ -2,10 +2,10 @@
 #include <Arduino.h>
 
 class UltrasonicIO {
- public:
+public:
   UltrasonicIO(int _trig, int _echo);
-  void read(long*);
+  void readUsonic(long *);
 
- private:
+private:
   int trig, echo;
 };

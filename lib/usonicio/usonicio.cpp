@@ -5,7 +5,7 @@ UltrasonicIO::UltrasonicIO(int _trig, int _echo) : trig(_trig), echo(_echo) {
   pinMode(echo, INPUT);
 }
 
-void UltrasonicIO::read(long *values) {
+void UltrasonicIO::readUsonic(long *values) {
   digitalWrite(trig, HIGH);
   delayMicroseconds(10);
   digitalWrite(trig, LOW);
