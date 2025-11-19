@@ -11,7 +11,7 @@ public:
   ARMIO &operator=(const ARMIO &) = default;
   void init_pwm();
   void arm_set_position(const int &position, const bool &enable);
-  void updatePID();
+  void updatePD();
 
 private:
   std::int8_t arm_pulse_pin;

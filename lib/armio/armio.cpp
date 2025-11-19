@@ -52,7 +52,7 @@ void ARMIO::arm_set_position(const int &position, const bool &enable) {
   wire_prev_msec = current_micros;
 }
 
-void ARMIO::updatePID() {
+void ARMIO::updatePD() {
   unsigned long current_micros = micros();
   // Handle micros() overflow (wraps around every ~70 minutes)
   unsigned long elapsed = (current_micros >= prev_msec)
@@ -82,10 +82,10 @@ void ARMIO::updatePID() {
   float derivative = error - previous_error;
   float derivative_term = kd * derivative;
 
-  // Calculate PID output (motor speed correction)
+  // Calculate PD output (motor speed correction)
   float pid_output = proportional + derivative_term;
 
-  // Convert PID to PWM: 1500µs (stop) ± pid_output
+  // Convert PID to PWM: 1500µs (stop) ± pd_output
   int pulse_width = 1500 + (int)pid_output;
 
   // Clamp to valid servo range (1000-2000µs)

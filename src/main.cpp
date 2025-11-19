@@ -52,8 +52,6 @@ void motor_task_func(void *arg) {
   }
 }
 
-void arm_task_func() { arm.updatePID(); }
-
 void stop_all_motor() {
   tyre_values[0] = 1500;
   tyre_values[1] = 1500;
@@ -138,7 +136,7 @@ void loop() {
   } else if (ultrasonic_clock == 2) {
     ultrasonic_3.read(&ultrasonic_values[2]);
   }
-  arm_task_func();
+  arm.updatePD();
 
   // Check motor timeout
   if (millis() - last_motor_command_time > motor_timeout_ms) {
