@@ -209,7 +209,7 @@ void loop() {
     if (strcmp(status, "OFF") == 0)
       stop_all_motor();
     serial.sendMessage(Message(msg.getId(), status));
-  } else if (message.startsWith("GET ultrasonic")) {
+  } else if (message.startsWith("GET usonic")) {
     snprintf(response, sizeof(response), "%ld %ld %ld", ultrasonic_values[0],
              ultrasonic_values[1], ultrasonic_values[2]);
     serial.sendMessage(Message(msg.getId(), String(response)));
