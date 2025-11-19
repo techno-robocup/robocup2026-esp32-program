@@ -1,13 +1,13 @@
 #include <motorio.hpp>
 
-MOTORIO::MOTORIO(const std::int8_t &_PIN, const int &_interval)
+MOTORIO::MOTORIO(const std::int8_t& _PIN, const int& _interval)
     : PIN(_PIN), interval(_interval), prev_msec(micros()) {
   pinMode(PIN, OUTPUT);
 }
 
 MOTORIO::MOTORIO() {}
 
-void MOTORIO::run_msec(const int &msec) {
+void MOTORIO::run_msec(const int& msec) {
   unsigned long current_micros = micros();
   // Handle micros() overflow (wraps around every ~70 minutes)
   unsigned long elapsed = (current_micros >= prev_msec)

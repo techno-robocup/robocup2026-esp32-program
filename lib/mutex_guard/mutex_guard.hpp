@@ -2,10 +2,10 @@
 #include <Arduino.h>
 
 class MutexGuard {
-public:
+ public:
   MutexGuard(SemaphoreHandle_t sem);
   ~MutexGuard();
 
-private:
+ private:
   SemaphoreHandle_t sem;
 };

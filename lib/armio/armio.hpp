@@ -4,16 +4,15 @@
 #include <Arduino.h>
 
 class ARMIO {
-public:
+ public:
   ARMIO();
-  ARMIO(const std::int8_t &arm_pulse, const std::int8_t &arm_feedback,
-        const std::int8_t &wire_sig);
-  ARMIO &operator=(const ARMIO &) = default;
+  ARMIO(const std::int8_t& arm_pulse, const std::int8_t& arm_feedback, const std::int8_t& wire_sig);
+  ARMIO& operator=(const ARMIO&) = default;
   void init_pwm();
-  void arm_set_position(const int &position, const bool &enable);
+  void arm_set_position(const int& position, const bool& enable);
   void updatePD();
 
-private:
+ private:
   std::int8_t arm_pulse_pin;
   std::int8_t arm_feedback_pin;
   std::int8_t wire_sig_pin;

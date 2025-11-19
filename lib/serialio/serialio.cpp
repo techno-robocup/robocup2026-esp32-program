@@ -4,10 +4,9 @@ SerialIO::SerialIO() : isReady(false) { init(); }
 
 void SerialIO::init() { Serial.begin(9600); }
 
-void SerialIO::sendMessage(const Message &message) {
+void SerialIO::sendMessage(const Message& message) {
   char buffer[256];
-  snprintf(buffer, sizeof(buffer), "%lld %s", message.getId(),
-           message.getMessage().c_str());
+  snprintf(buffer, sizeof(buffer), "%lld %s", message.getId(), message.getMessage().c_str());
   Serial.println(buffer);
   return;
 }
@@ -23,8 +22,8 @@ Message SerialIO::receiveMessage() {
       if (id_end > 0) {
         // Optimized: Use c_str() for parsing to avoid additional String
         // allocations
-        const char *str_ptr = str.c_str();
-        char *end_ptr;
+        const char* str_ptr = str.c_str();
+        char* end_ptr;
         id = strtoll(str_ptr, &end_ptr, 10);
         if (id_end < str.length() - 1) {
           message = str.substring(id_end + 1);
@@ -37,8 +36,7 @@ Message SerialIO::receiveMessage() {
 
 bool SerialIO::isMessageAvailable() { return Serial.available() > 0; }
 
-Message::Message(long long Id, const String &Message)
-    : id(Id), message(Message) {}
+Message::Message(long long Id, const String& Message) : id(Id), message(Message) {}
 
 long long Message::getId() const { return id; }
 

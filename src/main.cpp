@@ -1,10 +1,10 @@
+#include <Arduino.h>
+#include <cassert>
 #include "armio.hpp"
 #include "motorio.hpp"
 #include "mutex_guard.hpp"
 #include "serialio.hpp"
 #include "usonicio.hpp"
-#include <Arduino.h>
-#include <cassert>
 SerialIO serial;
 
 /* left right left right */
@@ -12,9 +12,8 @@ constexpr int tyre[4] = {13, 14, 15, 16};
 constexpr int button_pin = 21;
 constexpr int arm_feedback = 34, arm_pulse = 17;
 constexpr int wire_SIG = 32;
-constexpr int ultrasonic_trig1 = 18, ultrasonic_echo1 = 19,
-              ultrasonic_trig2 = 22, ultrasonic_echo2 = 23,
-              ultrasonic_trig3 = 26, ultrasonic_echo3 = 27;
+constexpr int ultrasonic_trig1 = 18, ultrasonic_echo1 = 19, ultrasonic_trig2 = 22,
+              ultrasonic_echo2 = 23, ultrasonic_trig3 = 26, ultrasonic_echo3 = 27;
 
 constexpr int tyre_interval = 40;
 
@@ -23,13 +22,10 @@ static int tyre_values[4] = {1500, 1500, 1500, 1500};
 static int arm_value = 0;
 static bool wire = false;
 
-inline const char *readbutton() {
-  return digitalRead(button_pin) ? "ON" : "OFF";
-}
+inline const char* readbutton() { return digitalRead(button_pin) ? "ON" : "OFF"; }
 
-MOTORIO tyre_1_motor(tyre[0], tyre_interval),
-    tyre_2_motor(tyre[1], tyre_interval), tyre_3_motor(tyre[2], tyre_interval),
-    tyre_4_motor(tyre[3], tyre_interval);
+MOTORIO tyre_1_motor(tyre[0], tyre_interval), tyre_2_motor(tyre[1], tyre_interval),
+    tyre_3_motor(tyre[2], tyre_interval), tyre_4_motor(tyre[3], tyre_interval);
 
 ARMIO arm(arm_pulse, arm_feedback, wire_SIG);
 
@@ -41,7 +37,7 @@ UltrasonicIO ultrasonic_1(ultrasonic_trig1, ultrasonic_echo1),
 TaskHandle_t motor_task;
 SemaphoreHandle_t motor_sem = xSemaphoreCreateMutex();
 
-void motor_task_func(void *arg) {
+void motor_task_func(void* arg) {
   while (true) {
     // MutexGuard guard(motor_sem);
     tyre_1_motor.run_msec(tyre_values[0]);
@@ -60,17 +56,15 @@ void stop_running_motor() {
 }
 
 // Optimized string parsing without String operations
-bool parseMotorCommand(const char *message, int *values, int max_values) {
+bool parseMotorCommand(const char* message, int* values, int max_values) {
   assert(max_values == 2);
   int idx = 0;
-  const char *ptr = message;
+  const char* ptr = message;
 
   while (idx < max_values && *ptr) {
     // Skip leading spaces
-    while (*ptr == ' ')
-      ptr++;
-    if (!*ptr)
-      break;
+    while (*ptr == ' ') ptr++;
+    if (!*ptr) break;
 
     // Parse number
     int val = 0;
@@ -86,33 +80,28 @@ bool parseMotorCommand(const char *message, int *values, int max_values) {
       ptr++;
     }
 
-    if (negative)
-      val = -val;
+    if (negative) val = -val;
     values[idx++] = val;
 
     // Skip to next space or end
-    while (*ptr == ' ')
-      ptr++;
+    while (*ptr == ' ') ptr++;
   }
 
   return idx == max_values;
 }
 
-bool parseArmCommand(const char *message, int *armValue, bool *wire) {
-  const char *ptr = message;
+bool parseArmCommand(const char* message, int* armValue, bool* wire) {
+  const char* ptr = message;
   int val = 0;
-  while (*ptr == ' ')
-    ptr++;
-  if (!*ptr)
-    return false;
+  while (*ptr == ' ') ptr++;
+  if (!*ptr) return false;
 
   while (*ptr >= '0' && *ptr <= '9') {
     val = val * 10 + (*ptr - '0');
     ptr++;
   }
   *armValue = val;
-  while (*ptr == ' ')
-    ptr++;
+  while (*ptr == ' ') ptr++;
   if (*ptr == '1')
     *wire = true;
   else if (*ptr == '0')
@@ -136,8 +125,7 @@ void setup() {
   - Task handle
   - Core ID
   */
-  xTaskCreatePinnedToCore(motor_task_func, "MotorTask", 2048, nullptr, 1,
-                          &motor_task, 0);
+  xTaskCreatePinnedToCore(motor_task_func, "MotorTask", 2048, nullptr, 1, &motor_task, 0);
   arm.arm_set_position(2000, false);
   arm.init_pwm();
 }
@@ -166,8 +154,7 @@ void loop() {
   }
 
   // Check for serial messages
-  if (!serial.isMessageAvailable())
-    return;
+  if (!serial.isMessageAvailable()) return;
 
   last_motor_command_time = millis();
 
@@ -175,21 +162,21 @@ void loop() {
   String message = msg.getMessage();
 
   if (message.startsWith("MOTOR ")) {
-    const char *motor_data = message.c_str() + 6; // Skip "MOTOR "
+    const char* motor_data = message.c_str() + 6;  // Skip "MOTOR "
     if (parseMotorCommand(motor_data, tyre_values, 2)) {
       // TODO: Fix legacy code for assuming 2 motor values
       tyre_values[2] = tyre_values[0];
       tyre_values[1] = 1500 - (tyre_values[1] - 1500);
       tyre_values[3] = tyre_values[1];
-      snprintf(response, sizeof(response), "OK %d %d %d %d", tyre_values[0],
-               tyre_values[1], tyre_values[2], tyre_values[3]);
+      snprintf(response, sizeof(response), "OK %d %d %d %d", tyre_values[0], tyre_values[1],
+               tyre_values[2], tyre_values[3]);
       serial.sendMessage(Message(msg.getId(), String(response)));
     } else {
       snprintf(response, sizeof(response), "ERR: MOTOR");
       serial.sendMessage(Message(msg.getId(), String(message)));
     }
   } else if (message.startsWith("Rescue ")) {
-    const char *rescue = message.c_str() + 7;
+    const char* rescue = message.c_str() + 7;
 
     if (parseArmCommand(rescue, &arm_value, &wire)) {
       arm.arm_set_position(arm_value, wire);
@@ -200,13 +187,12 @@ void loop() {
       serial.sendMessage(Message(msg.getId(), String(response)));
     }
   } else if (message.startsWith("GET button")) {
-    const char *status = readbutton();
-    if (strcmp(status, "OFF") == 0)
-      stop_running_motor();
+    const char* status = readbutton();
+    if (strcmp(status, "OFF") == 0) stop_running_motor();
     serial.sendMessage(Message(msg.getId(), status));
   } else if (message.startsWith("GET usonic")) {
-    snprintf(response, sizeof(response), "%ld %ld %ld", ultrasonic_values[0],
-             ultrasonic_values[1], ultrasonic_values[2]);
+    snprintf(response, sizeof(response), "%ld %ld %ld", ultrasonic_values[0], ultrasonic_values[1],
+             ultrasonic_values[2]);
     serial.sendMessage(Message(msg.getId(), String(response)));
   } else {
     return;
