@@ -23,7 +23,9 @@ static int tyre_values[4] = {1500, 1500, 1500, 1500};
 static int arm_value = 0;
 static bool wire = false;
 
-inline int readbutton() { return digitalRead(button_pin); }
+inline const char *readbutton() {
+  return digitalRead(button_pin) ? "ON" : "OFF";
+}
 
 MOTORIO tyre_1_motor(tyre[0], tyre_interval),
     tyre_2_motor(tyre[1], tyre_interval), tyre_3_motor(tyre[2], tyre_interval),
@@ -125,17 +127,14 @@ constexpr unsigned long motor_timeout_ms = 500;
 void loop() {
   // Always read ultrasonic sensors regardless of serial communication
   ++ultrasonic_clock;
-  if (ultrasonic_clock >= 3) {
-    ultrasonic_clock = 0;
-  }
+  ultrasonic_clock %= 3;
+  if (ultrasonic_clock == 0)
+    ultrasonic_1.readUsonic(&ultrasonic_values[0]);
+  else if (ultrasonic_clock == 1)
+    ultrasonic_2.readUsonic(&ultrasonic_values[1]);
+  else if (ultrasonic_clock == 2)
+    ultrasonic_3.readUsonic(&ultrasonic_values[2]);
 
-  if (ultrasonic_clock == 0) {
-    ultrasonic_1.read(&ultrasonic_values[0]);
-  } else if (ultrasonic_clock == 1) {
-    ultrasonic_2.read(&ultrasonic_values[1]);
-  } else if (ultrasonic_clock == 2) {
-    ultrasonic_3.read(&ultrasonic_values[2]);
-  }
   arm.updatePD();
 
   // Check motor timeout
@@ -179,7 +178,7 @@ void loop() {
       serial.sendMessage(Message(msg.getId(), String(response)));
     }
   } else if (message.startsWith("GET button")) {
-    const char *status = readbutton() ? "ON" : "OFF";
+    const char *status = readbutton();
     if (strcmp(status, "OFF") == 0)
       stop_all_motor();
     serial.sendMessage(Message(msg.getId(), status));
@@ -187,5 +186,7 @@ void loop() {
     snprintf(response, sizeof(response), "%ld %ld %ld", ultrasonic_values[0],
              ultrasonic_values[1], ultrasonic_values[2]);
     serial.sendMessage(Message(msg.getId(), String(response)));
+  } else {
+    return;
   }
 }
