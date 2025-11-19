@@ -52,10 +52,7 @@ void motor_task_func(void *arg) {
   }
 }
 
-void arm_task_func() {
-  arm.wire_tension_function(wire);
-  arm.updatePID();
-}
+void arm_task_func() { arm.updatePID(); }
 
 void stop_all_motor() {
   tyre_values[0] = 1500;
@@ -118,8 +115,7 @@ void setup() {
   */
   xTaskCreatePinnedToCore(motor_task_func, "MotorTask", 2048, nullptr, 1,
                           &motor_task, 0);
-  arm.arm_set_position(2000);
-  arm.wire_tension_function(false);
+  arm.arm_set_position(2000, false);
   arm.init_pwm();
 }
 
@@ -180,8 +176,7 @@ void loop() {
       strncpy(angle_str, rescue_data, 4);
       arm_value = atoi(angle_str);
       wire = (rescue_data[4] == '1');
-      arm.arm_set_position(arm_value);
-      arm.wire_tension_function(wire);
+      arm.arm_set_position(arm_value, wire);
       snprintf(response, sizeof(response), "OK %d %d", arm_value, (int)wire);
       serial.sendMessage(Message(msg.getId(), String(response)));
     }
