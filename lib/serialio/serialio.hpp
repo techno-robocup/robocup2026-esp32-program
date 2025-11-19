@@ -2,24 +2,24 @@
 #include <Arduino.h>
 
 class Message {
- public:
-  Message(long long id, const String& message);
+public:
+  Message(long long id, const String &message);
   long long getId() const;
   String getMessage() const;
 
- private:
+private:
   long long id;
   String message;
 };
 
 class SerialIO {
- public:
+public:
   SerialIO();
-  void sendMessage(const Message& message);
+  void sendMessage(const Message &message);
   Message receiveMessage();
   bool isMessageAvailable();
   void init();
 
- private:
+private:
   bool isReady;
 };
