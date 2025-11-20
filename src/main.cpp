@@ -43,7 +43,8 @@ SemaphoreHandle_t motor_sem = xSemaphoreCreateMutex();
 
 void motor_task_func(void *arg) {
   while (true) {
-    // MutexGuard guard(motor_sem);    tyre_1_motor.run_msec(tyre_values[0]);
+    // MutexGuard guard(motor_sem);
+    tyre_1_motor.run_msec(tyre_values[0]);
     tyre_2_motor.run_msec(tyre_values[1]);
     tyre_3_motor.run_msec(tyre_values[2]);
     tyre_4_motor.run_msec(tyre_values[3]);
