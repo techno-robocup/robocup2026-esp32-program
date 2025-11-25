@@ -39,7 +39,7 @@ SemaphoreHandle_t motor_sem = xSemaphoreCreateMutex();
 
 void motor_task_func(void* arg) {
   while (true) {
-    // MutexGuard guard(motor_sem);
+    MutexGuard guard(motor_sem);
     tyre_1_motor.run_msec(tyre_values[0]);
     tyre_2_motor.run_msec(tyre_values[1]);
     tyre_3_motor.run_msec(tyre_values[2]);
@@ -49,6 +49,7 @@ void motor_task_func(void* arg) {
 }
 
 void stop_running_motor() {
+  MutexGuard guard(motor_sem);
   tyre_values[0] = 1500;
   tyre_values[1] = 1500;
   tyre_values[2] = 1500;
@@ -163,11 +164,16 @@ void loop() {
 
   if (message.startsWith("MOTOR ")) {
     const char* motor_data = message.c_str() + 6;  // Skip "MOTOR "
-    if (parseMotorCommand(motor_data, tyre_values, 2)) {
+    int temp_values[2];
+    if (parseMotorCommand(motor_data, temp_values, 2)) {
       // TODO: Fix legacy code for assuming 2 motor values
-      tyre_values[2] = tyre_values[0];
-      tyre_values[1] = 1500 - (tyre_values[1] - 1500);
-      tyre_values[3] = tyre_values[1];
+      {
+        MutexGuard guard(motor_sem);
+        tyre_values[0] = temp_values[0];
+        tyre_values[1] = 1500 - (temp_values[1] - 1500);
+        tyre_values[2] = tyre_values[0];
+        tyre_values[3] = tyre_values[1];
+      }
       snprintf(response, sizeof(response), "OK %d %d %d %d", tyre_values[0], tyre_values[1],
                tyre_values[2], tyre_values[3]);
       serial.sendMessage(Message(msg.getId(), String(response)));
