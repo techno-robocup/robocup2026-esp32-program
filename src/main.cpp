@@ -38,12 +38,19 @@ TaskHandle_t motor_task;
 SemaphoreHandle_t motor_sem = xSemaphoreCreateMutex();
 
 void motor_task_func(void* arg) {
+  int local_values[4];
   while (true) {
-    MutexGuard guard(motor_sem);
-    tyre_1_motor.run_msec(tyre_values[0]);
-    tyre_2_motor.run_msec(tyre_values[1]);
-    tyre_3_motor.run_msec(tyre_values[2]);
-    tyre_4_motor.run_msec(tyre_values[3]);
+    {
+      MutexGuard guard(motor_sem);
+      local_values[0] = tyre_values[0];
+      local_values[1] = tyre_values[1];
+      local_values[2] = tyre_values[2];
+      local_values[3] = tyre_values[3];
+    }
+    tyre_1_motor.run_msec(local_values[0]);
+    tyre_2_motor.run_msec(local_values[1]);
+    tyre_3_motor.run_msec(local_values[2]);
+    tyre_4_motor.run_msec(local_values[3]);
     vTaskDelay(pdMS_TO_TICKS(15));  // ~15ms delay for ~50Hz (20ms period with ~5-6ms pulse time)
   }
 }
