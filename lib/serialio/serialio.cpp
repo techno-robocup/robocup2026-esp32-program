@@ -2,7 +2,7 @@
 
 SerialIO::SerialIO() : isReady(false) { init(); }
 
-void SerialIO::init() { Serial.begin(9600); }
+void SerialIO::init() { Serial.begin(4800); }
 
 void SerialIO::sendMessage(const Message& message) {
   char buffer[256];
