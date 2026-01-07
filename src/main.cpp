@@ -186,7 +186,7 @@ void loop() {
       serial.sendMessage(Message(msg.getId(), String(response)));
     } else {
       snprintf(response, sizeof(response), "ERR: MOTOR");
-      serial.sendMessage(Message(msg.getId(), String(message)));
+      serial.sendMessage(Message(msg.getId(), String(response)));
     }
   } else if (message.startsWith("Rescue ")) {
     const char* rescue = message.c_str() + 7;
