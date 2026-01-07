@@ -5,7 +5,7 @@ This repository contains the ESP32 firmware used in our RoboCup 2026 Kanto proje
 
 ## Dev
 
-This project using PlatformIO.
+This project uses PlatformIO.
 ```code
 pio run
 pio run --target upload
