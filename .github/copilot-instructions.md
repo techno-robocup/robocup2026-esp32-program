@@ -182,7 +182,7 @@ Current hardware setup (defined in main.cpp):
 2. **Race Conditions**: Always protect shared data accessed from multiple tasks with mutexes
 3. **Blocking Delays**: Never use `delay()` in tasks; use `vTaskDelay()` instead
 4. **String Memory**: Avoid excessive String concatenation; use C-style strings in loops
-5. **Array Bounds**: Ensure array sizes match actual usage (fixed: tyre_values[4] not [2])
+5. **Array Bounds**: Ensure array sizes match actual usage (e.g., if controlling 4 motors, declare array as `int values[4]`)
 
 ## Additional Notes
 
