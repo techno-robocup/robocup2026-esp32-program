@@ -1,6 +1,7 @@
 #include <Arduino.h>
 #include <cassert>
 #include "armio.hpp"
+#include "bnoio.hpp"
 #include "motorio.hpp"
 #include "mutex_guard.hpp"
 #include "serialio.hpp"
@@ -9,11 +10,12 @@ SerialIO serial;
 
 /* left right left right */
 constexpr int tyre[4] = {13, 14, 15, 16};
-constexpr int button_pin = 21;
+constexpr int button_pin = 25;  // Changed from 21 (now used for I2C SDA)
 constexpr int arm_feedback = 34, arm_pulse = 17;
 constexpr int wire_SIG = 32;
-constexpr int ultrasonic_trig1 = 18, ultrasonic_echo1 = 19, ultrasonic_trig2 = 22,
+constexpr int ultrasonic_trig1 = 18, ultrasonic_echo1 = 19, ultrasonic_trig2 = 33,
               ultrasonic_echo2 = 23, ultrasonic_trig3 = 26, ultrasonic_echo3 = 27;
+constexpr int bno_sda = 21, bno_scl = 22;  // I2C pins for BNO055
 
 constexpr int tyre_interval = 40;
 
@@ -28,6 +30,8 @@ MOTORIO tyre_1_motor(tyre[0], tyre_interval), tyre_2_motor(tyre[1], tyre_interva
     tyre_3_motor(tyre[2], tyre_interval), tyre_4_motor(tyre[3], tyre_interval);
 
 ARMIO arm(arm_pulse, arm_feedback, wire_SIG);
+
+BNOIO bno(bno_sda, bno_scl);
 
 static long ultrasonic_values[3] = {0, 0, 0};
 UltrasonicIO ultrasonic_1(ultrasonic_trig1, ultrasonic_echo1),
@@ -123,6 +127,12 @@ bool parseArmCommand(const char* message, int* armValue, bool* wire) {
 void setup() {
   serial.init();
   pinMode(button_pin, INPUT);
+
+  // Initialize BNO055 sensor
+  if (!bno.init()) {
+    Serial.println("BNO055 initialization failed!");
+  }
+
   /*
   ARGS for xTaskCreatePinnedToCore:
   - Task function
@@ -155,6 +165,9 @@ void loop() {
     ultrasonic_3.readUsonic(&ultrasonic_values[2]);
 
   arm.updatePD();
+
+  // Read BNO055 sensor
+  bno.readSensor();
 
   // Check motor timeout
   if (millis() - last_motor_command_time > motor_timeout_ms) {
@@ -207,6 +220,15 @@ void loop() {
     snprintf(response, sizeof(response), "%ld %ld %ld", ultrasonic_values[0], ultrasonic_values[1],
              ultrasonic_values[2]);
     serial.sendMessage(Message(msg.getId(), String(response)));
+  } else if (message.startsWith("GET bno")) {
+    if (bno.isInitialized()) {
+      snprintf(response, sizeof(response), "%.2f %.2f %.2f %.2f %.2f %.2f", bno.getHeading(),
+               bno.getRoll(), bno.getPitch(), bno.getAccelX(), bno.getAccelY(), bno.getAccelZ());
+      serial.sendMessage(Message(msg.getId(), String(response)));
+    } else {
+      snprintf(response, sizeof(response), "ERR: BNO055 not initialized");
+      serial.sendMessage(Message(msg.getId(), String(response)));
+    }
   } else {
     return;
   }
