@@ -25,6 +25,8 @@ BNOIO::BNOIO(int sda_pin, int scl_pin)
     , accel_z_(0) {}
 
 bool BNOIO::init() {
+  // Initialize I2C bus with specified pins
+  // Note: Wire.begin() can be called multiple times safely in ESP32 Arduino
   Wire.begin(sda_pin_, scl_pin_);
 
   if (!bno.begin()) {
@@ -32,6 +34,7 @@ bool BNOIO::init() {
     return false;
   }
 
+  // BNO055 requires time to initialize after begin()
   delay(1000);
   bno.setExtCrystalUse(true);
   initialized_ = true;
