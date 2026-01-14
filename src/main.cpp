@@ -152,6 +152,8 @@ int ultrasonic_clock = 0;
 char response[64];
 unsigned long last_motor_command_time = 0;
 constexpr unsigned long motor_timeout_ms = 500;
+unsigned long last_bno_read_time = 0;
+constexpr unsigned long bno_read_interval_ms = 100;  // Read BNO055 every 100ms max
 
 void loop() {
   // Always read ultrasonic sensors regardless of serial communication
@@ -166,8 +168,18 @@ void loop() {
 
   arm.updatePD();
 
-  // Read BNO055 sensor
-  bno.readSensor();
+  // Read BNO055 sensor with throttling to prevent I2C bus lockup
+  unsigned long now = millis();
+  if (now - last_bno_read_time >= bno_read_interval_ms) {
+    last_bno_read_time = now;
+    if (bno.readSensor()) {
+      Serial.printf("[LOOP] BNO H:%.1f R:%.1f P:%.1f Ax:%.2f Ay:%.2f Az:%.2f\n",
+                    bno.getHeading(), bno.getRoll(), bno.getPitch(),
+                    bno.getAccelX(), bno.getAccelY(), bno.getAccelZ());
+    } else {
+      Serial.println("[LOOP] BNO read failed");
+    }
+  }
 
   // Check motor timeout
   if (millis() - last_motor_command_time > motor_timeout_ms) {
