@@ -1,4 +1,5 @@
 #include "bnoio.hpp"
+#include <Arduino.h>  // Includes FreeRTOS for vTaskDelay
 
 BNOIO::BNOIO()
     : bno(Adafruit_BNO055(55, 0x28))
@@ -35,7 +36,7 @@ bool BNOIO::init() {
   }
 
   // BNO055 requires time to initialize after begin()
-  delay(1000);
+  vTaskDelay(pdMS_TO_TICKS(1000));
   bno.setExtCrystalUse(true);
 
   // Set to IMU mode (accelerometer + gyroscope fusion, no magnetometer)
