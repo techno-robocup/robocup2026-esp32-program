@@ -2,13 +2,14 @@
 
 ## Overview
 
-This library provides an interface for communicating with the BNO055 9-axis absolute orientation sensor via I2C.
+This library provides an interface for communicating with the BNO055 9-axis absolute orientation sensor via I2C. The sensor is configured to operate in **IMU mode**, which uses accelerometer and gyroscope data with sensor fusion (no magnetometer).
 
 ## Hardware Configuration
 
 - **I2C SDA Pin**: 21
 - **I2C SCL Pin**: 22
 - **I2C Address**: 0x28 (default)
+- **Operating Mode**: IMUPLUS (accelerometer + gyroscope fusion)
 
 ## Features
 

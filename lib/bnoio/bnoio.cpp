@@ -37,6 +37,10 @@ bool BNOIO::init() {
   // BNO055 requires time to initialize after begin()
   delay(1000);
   bno.setExtCrystalUse(true);
+
+  // Set to IMU mode (accelerometer + gyroscope fusion, no magnetometer)
+  bno.setMode(Adafruit_BNO055::OPERATION_MODE_IMUPLUS);
+
   initialized_ = true;
   return true;
 }
