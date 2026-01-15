@@ -12,6 +12,7 @@ class BNOIO {
   BNOIO(int sda_pin, int scl_pin);
   bool init();
   bool readSensor();
+  void reset();  // Force reset and reinit
 
   // Getters for sensor values
   float getHeading() const;
@@ -28,6 +29,8 @@ class BNOIO {
   int sda_pin_;
   int scl_pin_;
   bool initialized_;
+  unsigned long last_successful_read_;
+  unsigned int consecutive_failures_;
 
   // Cached sensor values
   float heading_;

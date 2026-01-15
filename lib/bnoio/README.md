@@ -23,6 +23,14 @@ The library reads and caches the following sensor data:
   - Y-axis acceleration (m/s²)
   - Z-axis acceleration (m/s²)
 
+### Automatic Error Recovery
+
+The library includes robust error detection and recovery:
+- **Data Validation**: Checks if sensor data is valid (detects when all values are zero)
+- **Automatic Reinitialization**: After 3 consecutive failures, the sensor and I2C bus are automatically reset
+- **Timeout Protection**: If no successful read occurs for 3 seconds, forces a complete reset
+- **No Manual Reset Required**: The system recovers automatically without needing to power cycle the ESP32
+
 ## Protocol Command
 
 ### GET bno

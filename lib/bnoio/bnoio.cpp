@@ -6,6 +6,8 @@ BNOIO::BNOIO()
     , sda_pin_(21)
     , scl_pin_(22)
     , initialized_(false)
+    , last_successful_read_(0)
+    , consecutive_failures_(0)
     , heading_(0)
     , roll_(0)
     , pitch_(0)
@@ -18,6 +20,8 @@ BNOIO::BNOIO(int sda_pin, int scl_pin)
     , sda_pin_(sda_pin)
     , scl_pin_(scl_pin)
     , initialized_(false)
+    , last_successful_read_(0)
+    , consecutive_failures_(0)
     , heading_(0)
     , roll_(0)
     , pitch_(0)
@@ -46,6 +50,8 @@ bool BNOIO::init() {
   
   // Serial.println("[BNO] Initialization complete!");
   initialized_ = true;
+  last_successful_read_ = millis();
+  consecutive_failures_ = 0;
   return true;
 }
 
@@ -55,26 +61,40 @@ bool BNOIO::readSensor() {
   }
 
   sensors_event_t orientationData, accelerometerData;
-  
-  // Try to read sensor with timeout recovery
-  static unsigned long last_successful_read = 0;
   unsigned long now = millis();
   
-  // If no successful read for 5 seconds, reinitialize
-  if (now - last_successful_read > 5000) {
-    // Serial.println("[BNO] No successful reads for 5s, reinitializing...");
-    initialized_ = false;
-    // Don't recursively call init, just reset flag
-    // The next init() call will reinitialize
+  // Check if too much time has passed since last successful read
+  if (last_successful_read_ > 0 && (now - last_successful_read_ > 3000)) {
+    // Serial.println("[BNO] Timeout detected, attempting recovery...");
+    reset();  // Force full reinit
     return false;
   }
   
-  // Try to get data - the library's getEvent doesn't return error codes
-  // but we can at least avoid reading too fast
+  // Read orientation data
   bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
-  
   bno.getEvent(&accelerometerData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
 
+  // Check if data is valid (BNO055 returns 0 for all values when communication fails)
+  // A real sensor should have at least some non-zero acceleration due to gravity
+  bool data_valid = (accelerometerData.acceleration.x != 0 || 
+                     accelerometerData.acceleration.y != 0 || 
+                     accelerometerData.acceleration.z != 0);
+  
+  if (!data_valid) {
+    consecutive_failures_++;
+    // Serial.print("[BNO] Invalid data, failures: ");
+    // Serial.println(consecutive_failures_);
+    
+    // After 3 consecutive failures, attempt recovery
+    if (consecutive_failures_ >= 3) {
+      // Serial.println("[BNO] Too many failures, attempting recovery...");
+      reset();
+      return false;
+    }
+    return false;
+  }
+
+  // Data is valid, update cached values
   heading_ = orientationData.orientation.x;
   roll_ = orientationData.orientation.y;
   pitch_ = orientationData.orientation.z;
@@ -83,7 +103,8 @@ bool BNOIO::readSensor() {
   accel_y_ = accelerometerData.acceleration.y;
   accel_z_ = accelerometerData.acceleration.z;
 
-  last_successful_read = now;
+  last_successful_read_ = now;
+  consecutive_failures_ = 0;  // Reset failure counter on success
   return true;
 }
 
@@ -100,3 +121,23 @@ float BNOIO::getAccelY() const { return accel_y_; }
 float BNOIO::getAccelZ() const { return accel_z_; }
 
 bool BNOIO::isInitialized() const { return initialized_; }
+
+void BNOIO::reset() {
+  // Serial.println("[BNO] Resetting sensor...");
+  initialized_ = false;
+  consecutive_failures_ = 0;
+  
+  // Small delay to let I2C bus settle
+  delay(100);
+  
+  // Reinitialize I2C bus
+  Wire.end();
+  delay(50);
+  
+  // Reinitialize sensor
+  if (init()) {
+    // Serial.println("[BNO] Reset successful!");
+  } else {
+    // Serial.println("[BNO] Reset failed, will retry on next read");
+  }
+}
