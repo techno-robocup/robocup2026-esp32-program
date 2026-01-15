@@ -29,22 +29,22 @@ bool BNOIO::init() {
   // Initialize I2C bus with specified pins (use standard 400kHz for BNO055)
   Wire.begin(sda_pin_, scl_pin_, 400000);  // 400kHz I2C clock (standard for sensors)
 
-  Serial.println("[BNO] Attempting bno.begin()...");
+  // Serial.println("[BNO] Attempting bno.begin()...");
   if (!bno.begin()) {
     Serial.println("[BNO] begin() failed!");
     initialized_ = false;
     return false;
   }
-  Serial.println("[BNO] begin() successful!");
+  // Serial.println("[BNO] begin() successful!");
   
-  Serial.println("[BNO] Setting external crystal...");
+  // Serial.println("[BNO] Setting external crystal...");
   bno.setExtCrystalUse(true);
 
   // Set to IMU mode (accelerometer + gyroscope fusion, no magnetometer)
-  Serial.println("[BNO] Setting operation mode...");
+  // Serial.println("[BNO] Setting operation mode...");
   bno.setMode(OPERATION_MODE_IMUPLUS);
   
-  Serial.println("[BNO] Initialization complete!");
+  // Serial.println("[BNO] Initialization complete!");
   initialized_ = true;
   return true;
 }
@@ -62,7 +62,7 @@ bool BNOIO::readSensor() {
   
   // If no successful read for 5 seconds, reinitialize
   if (now - last_successful_read > 5000) {
-    Serial.println("[BNO] No successful reads for 5s, reinitializing...");
+    // Serial.println("[BNO] No successful reads for 5s, reinitializing...");
     initialized_ = false;
     // Don't recursively call init, just reset flag
     // The next init() call will reinitialize
