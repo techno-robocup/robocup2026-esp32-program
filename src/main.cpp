@@ -165,17 +165,19 @@ void loop() {
     ultrasonic_2.readUsonic(&ultrasonic_values[1]);
   else if (ultrasonic_clock == 2)
     ultrasonic_3.readUsonic(&ultrasonic_values[2]);
-
+  Serial.printf("[LOOP] Ultrasonic 0:%ld 1:%ld 2:%ld", ultrasonic_values[0], ultrasonic_values[1],
+                ultrasonic_values[2]);
+  const char* status = readbutton();
+  Serial.println(status);
   arm.updatePD();
 
-  // Read BNO055 sensor with throttling to prevent I2C bus lockup
-  unsigned long now = millis();
+  Read BNO055 sensor with throttling to prevent I2C bus lockup unsigned long now = millis();
   if (now - last_bno_read_time >= bno_read_interval_ms) {
     last_bno_read_time = now;
     if (bno.readSensor()) {
-      Serial.printf("[LOOP] BNO H:%.1f R:%.1f P:%.1f Ax:%.2f Ay:%.2f Az:%.2f\n",
-                    bno.getHeading(), bno.getRoll(), bno.getPitch(),
-                    bno.getAccelX(), bno.getAccelY(), bno.getAccelZ());
+      Serial.printf("[LOOP] BNO H:%.1f R:%.1f P:%.1f Ax:%.2f Ay:%.2f Az:%.2f\n", bno.getHeading(),
+                    bno.getRoll(), bno.getPitch(), bno.getAccelX(), bno.getAccelY(),
+                    bno.getAccelZ());
     } else {
       Serial.println("[LOOP] BNO read failed");
     }
