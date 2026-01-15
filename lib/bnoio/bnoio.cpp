@@ -31,7 +31,7 @@ bool BNOIO::init() {
 
   // Serial.println("[BNO] Attempting bno.begin()...");
   if (!bno.begin()) {
-    Serial.println("[BNO] begin() failed!");
+    // Serial.println("[BNO] begin() failed!");
     initialized_ = false;
     return false;
   }
