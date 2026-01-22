@@ -40,14 +40,14 @@ bool BNOIO::init() {
     return false;
   }
   // Serial.println("[BNO] begin() successful!");
-  
+
   // Serial.println("[BNO] Setting external crystal...");
   bno.setExtCrystalUse(true);
 
   // Set to IMU mode (accelerometer + gyroscope fusion, no magnetometer)
   // Serial.println("[BNO] Setting operation mode...");
   bno.setMode(OPERATION_MODE_IMUPLUS);
-  
+
   // Serial.println("[BNO] Initialization complete!");
   initialized_ = true;
   last_successful_read_ = millis();
@@ -62,29 +62,29 @@ bool BNOIO::readSensor() {
 
   sensors_event_t orientationData, accelerometerData;
   unsigned long now = millis();
-  
+
   // Check if too much time has passed since last successful read
   if (last_successful_read_ > 0 && (now - last_successful_read_ > 3000)) {
     // Serial.println("[BNO] Timeout detected, attempting recovery...");
     reset();  // Force full reinit
     return false;
   }
-  
+
   // Read orientation data
   bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
   bno.getEvent(&accelerometerData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
 
   // Check if data is valid (BNO055 returns 0 for all values when communication fails)
   // A real sensor should have at least some non-zero acceleration due to gravity
-  bool data_valid = (accelerometerData.acceleration.x != 0 || 
-                     accelerometerData.acceleration.y != 0 || 
-                     accelerometerData.acceleration.z != 0);
-  
+  bool data_valid =
+      (accelerometerData.acceleration.x != 0 || accelerometerData.acceleration.y != 0 ||
+       accelerometerData.acceleration.z != 0);
+
   if (!data_valid) {
     consecutive_failures_++;
     // Serial.print("[BNO] Invalid data, failures: ");
     // Serial.println(consecutive_failures_);
-    
+
     // After 3 consecutive failures, attempt recovery
     if (consecutive_failures_ >= 3) {
       // Serial.println("[BNO] Too many failures, attempting recovery...");
@@ -126,14 +126,14 @@ void BNOIO::reset() {
   // Serial.println("[BNO] Resetting sensor...");
   initialized_ = false;
   consecutive_failures_ = 0;
-  
+
   // Small delay to let I2C bus settle
   delay(100);
-  
+
   // Reinitialize I2C bus
   Wire.end();
   delay(50);
-  
+
   // Reinitialize sensor
   if (init()) {
     // Serial.println("[BNO] Reset successful!");
