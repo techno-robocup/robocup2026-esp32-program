@@ -17,9 +17,8 @@ class ARMIO {
   std::int8_t arm_feedback_pin;
   std::int8_t wire_sig_pin;
 
-  unsigned long prev_msec;
-  unsigned long wire_prev_msec;
-  int servo_interval;
+  int arm_pulse_channel;
+  int wire_sig_channel;
 
   // PID controller variables
   const float kp = 0.5;

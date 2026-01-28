@@ -11,7 +11,8 @@ class MOTORIO {
 
  private:
   std::int8_t PIN;
-  unsigned long prev_msec;  // Changed to unsigned for overflow handling
+  int ledc_channel;
   int interval;
+  static int channel_counter;  // Track assigned LEDC channels
 };
 #endif
