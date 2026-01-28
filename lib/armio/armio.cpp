@@ -10,17 +10,24 @@ ARMIO::ARMIO(const std::int8_t& arm_pulse, const std::int8_t& arm_feedback,
     , previous_error(0.0)
     , target_position(2048) {}  // Start at middle position
 
-ARMIO::ARMIO() : arm_pulse_pin(-1), arm_feedback_pin(-1), wire_sig_pin(-1), arm_pulse_channel(-1), wire_sig_channel(-1), target_position(2048), previous_error(0.0) {}
+ARMIO::ARMIO()
+    : arm_pulse_pin(-1)
+    , arm_feedback_pin(-1)
+    , wire_sig_pin(-1)
+    , arm_pulse_channel(-1)
+    , wire_sig_channel(-1)
+    , target_position(2048)
+    , previous_error(0.0) {}
 
 void ARMIO::init_pwm() {
   // Configure LEDC for arm servo pulse (50Hz, 16-bit resolution)
   ledcSetup(arm_pulse_channel, 50, 16);
   ledcAttachPin(arm_pulse_pin, arm_pulse_channel);
-  
+
   // Configure LEDC for wire signal (50Hz, 16-bit resolution)
   ledcSetup(wire_sig_channel, 50, 16);
   ledcAttachPin(wire_sig_pin, wire_sig_channel);
-  
+
   pinMode(arm_feedback_pin, INPUT);
 }
 
@@ -45,7 +52,7 @@ void ARMIO::arm_set_position(const int& position, const bool& enable) {
     pwm_value = 2400;  // tight
   else
     pwm_value = 500;  // slack
-  
+
   uint32_t duty = (static_cast<uint32_t>(pwm_value) * 65535) / 20000;
   ledcWrite(wire_sig_channel, duty);
 }

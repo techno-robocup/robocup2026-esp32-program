@@ -2,8 +2,7 @@
 
 int MOTORIO::channel_counter = 0;
 
-MOTORIO::MOTORIO(const std::int8_t& _PIN, const int& _interval)
-    : PIN(_PIN), interval(_interval) {
+MOTORIO::MOTORIO(const std::int8_t& _PIN, const int& _interval) : PIN(_PIN), interval(_interval) {
   // Assign LEDC channel (0-15 available, limit to 8 channels)
   ledc_channel = (channel_counter < 8) ? channel_counter : 0;
   channel_counter++;
