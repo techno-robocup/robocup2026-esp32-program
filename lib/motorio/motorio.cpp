@@ -2,9 +2,18 @@
 
 int MOTORIO::channel_counter = 0;
 
-MOTORIO::MOTORIO(const std::int8_t& _PIN, const int& _interval) : PIN(_PIN), interval(_interval) {
-  // Assign LEDC channel (0-15 available, limit to 8 channels)
-  ledc_channel = (channel_counter < 8) ? channel_counter : 0;
+MOTORIO::MOTORIO(const std::int8_t& _PIN, const int& _interval)
+    : PIN(_PIN), interval(_interval), ledc_channel(-1) {
+  // Prevent exceeding available LEDC channels (0-7 for MOTORIO, 8+ reserved for other peripherals)
+  if (channel_counter >= 8) {
+    // Fatal error: too many MOTORIO instances
+    Serial.println("ERROR: Cannot create more than 8 MOTORIO instances");
+    channel_counter++;  // Increment to avoid repeated error messages
+    return;
+  }
+
+  // Assign LEDC channel sequentially
+  ledc_channel = channel_counter;
   channel_counter++;
 
   // Configure LEDC PWM
