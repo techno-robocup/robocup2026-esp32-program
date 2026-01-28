@@ -2,6 +2,11 @@
 #ifndef __ROBOT__MOTORIO__HPP
 #define __ROBOT__MOTORIO__HPP 1
 #include <Arduino.h>
+
+// Safe PWM pulse width limits for RC servos/ESCs (in microseconds)
+constexpr int MOTOR_PWM_MIN_US = 1000;  // Minimum safe pulse width
+constexpr int MOTOR_PWM_MAX_US = 2000;  // Maximum safe pulse width
+
 class MOTORIO {
  public:
   MOTORIO();

@@ -7,6 +7,7 @@ MOTORIO::MOTORIO(const std::int8_t& _PIN, const int& _interval)
 
 MOTORIO::MOTORIO() {}
 
+// Note: Despite the function name, 'msec' is actually in microseconds (µs) for PWM pulse width
 void MOTORIO::run_msec(const int& msec) {
   unsigned long current_micros = micros();
   // Handle micros() overflow (wraps around every ~70 minutes)
@@ -17,8 +18,14 @@ void MOTORIO::run_msec(const int& msec) {
   if (elapsed < (unsigned long)interval) {
     return;
   }
+
+  // Clamp pulse width to safe servo/ESC range (1000-2000µs)
+  int pulse_width = msec;
+  if (pulse_width < MOTOR_PWM_MIN_US) pulse_width = MOTOR_PWM_MIN_US;
+  if (pulse_width > MOTOR_PWM_MAX_US) pulse_width = MOTOR_PWM_MAX_US;
+
   digitalWrite(PIN, HIGH);
-  delayMicroseconds(msec);
+  delayMicroseconds(pulse_width);
   digitalWrite(PIN, LOW);
   prev_msec = current_micros;
 }
