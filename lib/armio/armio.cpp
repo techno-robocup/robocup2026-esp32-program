@@ -5,6 +5,9 @@ ARMIO::ARMIO(const std::int8_t& arm_pulse, const std::int8_t& arm_feedback,
     : arm_pulse_pin(arm_pulse)
     , arm_feedback_pin(arm_feedback)
     , wire_sig_pin(wire_sig)
+    // Note: LEDC channels 8 and 9 are intentionally reserved for ARMIO.
+    // MOTORIO uses channels 0–3 via its own allocator; reserving 8 and 9 here
+    // avoids conflicts and leaves 4–7 available for other peripherals.
     , arm_pulse_channel(8)
     , wire_sig_channel(9)
     , previous_error(0.0)
