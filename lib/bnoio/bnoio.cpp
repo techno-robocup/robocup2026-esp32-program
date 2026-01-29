@@ -46,7 +46,7 @@ bool BNOIO::init() {
 
   // Set to IMU mode (accelerometer + gyroscope fusion, no magnetometer)
   // Serial.println("[BNO] Setting operation mode...");
-  bno.setMode(OPERATION_MODE_IMUPLUS);
+  bno.setMode(OPERATION_MODE_NDOF);
 
   // Serial.println("[BNO] Initialization complete!");
   initialized_ = true;
