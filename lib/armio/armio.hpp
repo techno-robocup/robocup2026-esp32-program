@@ -22,7 +22,7 @@ class ARMIO {
 
   // PID controller variables
   const float kp = 0.5;
-  const float ki = 0.1;
+  const float ki = 0.01;
   const float kd = 0.3;
   float previous_error;
   float integral_sum;
