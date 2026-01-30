@@ -10,7 +10,7 @@ class ARMIO {
   ARMIO& operator=(const ARMIO&) = default;
   void init_pwm();
   void arm_set_position(const int& position, const bool& enable);
-  void updatePD();
+  void updatePID();
 
  private:
   std::int8_t arm_pulse_pin;
@@ -22,8 +22,10 @@ class ARMIO {
 
   // PID controller variables
   const float kp = 0.5;
+  const float ki = 0.1;
   const float kd = 0.3;
   float previous_error;
+  float integral_sum;
   int target_position;
 
   // Read current arm position from feedback pin

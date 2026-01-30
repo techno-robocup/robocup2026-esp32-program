@@ -11,6 +11,7 @@ ARMIO::ARMIO(const std::int8_t& arm_pulse, const std::int8_t& arm_feedback,
     , arm_pulse_channel(8)
     , wire_sig_channel(9)
     , previous_error(0.0)
+    , integral_sum(0.0)
     , target_position(2048) {}  // Start at middle position
 
 ARMIO::ARMIO()
@@ -20,7 +21,8 @@ ARMIO::ARMIO()
     , arm_pulse_channel(-1)
     , wire_sig_channel(-1)
     , target_position(2048)
-    , previous_error(0.0) {}
+    , previous_error(0.0)
+    , integral_sum(0.0) {}
 
 void ARMIO::init_pwm() {
   // Configure LEDC for arm servo pulse (50Hz, 16-bit resolution)
@@ -60,7 +62,7 @@ void ARMIO::arm_set_position(const int& position, const bool& enable) {
   ledcWrite(wire_sig_channel, duty);
 }
 
-void ARMIO::updatePD() {
+void ARMIO::updatePID() {
   int current_position = getCurrentPosition();
   float error = target_position - current_position;
 
@@ -75,14 +77,18 @@ void ARMIO::updatePD() {
   // Proportional term
   float proportional = kp * error;
 
+  // Integral term (accumulate error over time)
+  integral_sum += error;
+  float integral = ki * integral_sum;
+
   // Derivative term
   float derivative = error - previous_error;
   float derivative_term = kd * derivative;
 
-  // Calculate PD output (motor speed correction)
-  float pid_output = proportional + derivative_term;
+  // Calculate PID output (motor speed correction)
+  float pid_output = proportional + integral + derivative_term;
 
-  // Convert PID to PWM: 1500µs (stop) ± pd_output
+  // Convert PID to PWM: 1500µs (stop) ± pid_output
   int pulse_width = 1500 + (int)pid_output;
 
   // Clamp to valid servo range (1000-2000µs)
