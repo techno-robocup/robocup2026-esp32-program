@@ -21,7 +21,7 @@ class ARMIO {
   int wire_sig_channel;
 
   // PID controller variables
-  const float kp = 0.5;
+  const float kp = 0.45;
   const float ki = 0.01;
   const float kd = 0.15;
   float previous_error;
