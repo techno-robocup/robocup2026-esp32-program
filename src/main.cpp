@@ -234,8 +234,7 @@ void loop() {
     }
   } else if (message.startsWith("healthcheck")) {
     serial.sendMessage(Message(msg.getId(), "OK"));
-  }
-  else {
+  } else {
     return;
   }
 }
