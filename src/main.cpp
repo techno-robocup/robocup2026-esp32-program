@@ -232,7 +232,10 @@ void loop() {
       snprintf(response, sizeof(response), "ERR: BNO055 not initialized");
       serial.sendMessage(Message(msg.getId(), String(response)));
     }
-  } else {
+  } else if (message.startsWith("healthcheck")) {
+    serial.sendMessage(Message(msg.getId(), "OK"));
+  }
+  else {
     return;
   }
 }
