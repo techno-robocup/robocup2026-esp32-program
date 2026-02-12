@@ -1,4 +1,5 @@
 #include "armio.hpp"
+#include <algorithm>
 
 ARMIO::ARMIO(const std::int8_t& arm_pulse, const std::int8_t& arm_feedback,
              const std::int8_t& wire_sig)
@@ -80,6 +81,8 @@ void ARMIO::updatePID() {
   // Integral term (accumulate error over time)
   integral_sum += error;
   float integral = ki * integral_sum;
+
+  integral = min(1000.0f, max(-1000.0f, integral)); // Clamp integral term to prevent windup
 
   // Derivative term
   float derivative = error - previous_error;
