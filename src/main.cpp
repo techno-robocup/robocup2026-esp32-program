@@ -158,11 +158,11 @@ void loop() {
   ++ultrasonic_clock;
   ultrasonic_clock %= 3;
   if (ultrasonic_clock == 0)
-    ultrasonic_1.readUsonic(&ultrasonic_values[0]);
+    ultrasonic_1.readUsonic(ultrasonic_values + 0);
   else if (ultrasonic_clock == 1)
-    ultrasonic_2.readUsonic(&ultrasonic_values[1]);
+    ultrasonic_2.readUsonic(ultrasonic_values + 1);
   else if (ultrasonic_clock == 2)
-    ultrasonic_3.readUsonic(&ultrasonic_values[2]);
+    ultrasonic_3.readUsonic(ultrasonic_values + 2);
   arm.updatePID();
 
   // Read BNO055 sensor with throttling to prevent I2C bus lockup
