@@ -82,7 +82,7 @@ void ARMIO::updatePID() {
   integral_sum += error;
   float integral = ki * integral_sum;
 
-  integral = min(1000.0f, max(-1000.0f, integral)); // Clamp integral term to prevent windup
+  integral = min(1000.0f, max(-1000.0f, integral));  // Clamp integral term to prevent windup
 
   // Derivative term
   float derivative = error - previous_error;
