@@ -6,6 +6,8 @@ UltrasonicIO::UltrasonicIO(int _trig, int _echo) : trig(_trig), echo(_echo) {
 }
 
 void UltrasonicIO::readUsonic(long* values) {
+  digitalWrite(trig, LOW);
+  delayMicroseconds(2);
   digitalWrite(trig, HIGH);
   delayMicroseconds(10);
   digitalWrite(trig, LOW);
