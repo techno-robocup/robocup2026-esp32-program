@@ -14,7 +14,7 @@ void UltrasonicIO::readUsonic(long* values) {
   // Add timeout to prevent blocking (max 30ms = ~5 meters)
   long duration = pulseIn(echo, HIGH, 30000);
   if (duration == 0) {
-    duration = 30000;  // Set to max on timeout
+    duration = -1;  // Set to max on timeout
   }
   // Convert to centimeters: (duration * 0.034) / 2
   // Simplified: (duration * 17) / 1000
