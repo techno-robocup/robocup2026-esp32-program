@@ -142,8 +142,8 @@ void setup() {
   - Core ID
   */
   xTaskCreatePinnedToCore(motor_task_func, "MotorTask", 2048, nullptr, 1, &motor_task, 0);
-  arm.arm_set_position(2000, false);
   arm.init_pwm();
+  arm.arm_set_position(2000, false);
 }
 
 int ultrasonic_clock = 0;
