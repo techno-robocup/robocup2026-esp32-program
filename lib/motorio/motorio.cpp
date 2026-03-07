@@ -3,32 +3,33 @@
 int MOTORIO::channel_counter = 0;
 
 MOTORIO::MOTORIO(const std::int8_t& _PIN, const int& _interval)
-    : PIN(_PIN), interval(_interval), ledc_channel(-1) {
-  // Prevent exceeding available LEDC channels (0-7 for MOTORIO, 8+ reserved for other peripherals)
+    : PIN(_PIN), interval(_interval), ledc_channel(-1), initialized_(false) {
   if (channel_counter >= 8) {
-    // Fatal error: too many MOTORIO instances
-    Serial.println("ERROR: Cannot create more than 8 MOTORIO instances");
-    channel_counter++;  // Increment to avoid repeated error messages
+    channel_counter++;
     return;
   }
-
-  // Assign LEDC channel sequentially
   ledc_channel = channel_counter;
   channel_counter++;
-
-  // Configure LEDC PWM
-  // Frequency: 50Hz (20ms period for servo/motor control)
-  // Resolution: 16-bit (0-65535)
-  ledcSetup(ledc_channel, 50, 16);
-  ledcAttachPin(PIN, ledc_channel);
 }
 
-MOTORIO::MOTORIO() : PIN(-1), ledc_channel(-1), interval(0) {}
+MOTORIO::MOTORIO() : PIN(-1), ledc_channel(-1), interval(0), initialized_(false) {}
+
+bool MOTORIO::init_pwm() {
+  if (ledc_channel < 0 || PIN < 0) {
+    initialized_ = false;
+    return false;
+  }
+  if (ledcSetup(ledc_channel, 50, 16) == 0) {
+    initialized_ = false;
+    return false;
+  }
+  ledcAttachPin(PIN, ledc_channel);
+  initialized_ = true;
+  return true;
+}
 
 void MOTORIO::run_msec(const int& msec) {
-  if (ledc_channel < 0 || PIN < 0) {
-    return;
-  }
+  if (!initialized_) return;
   // Convert pulse width in microseconds to PWM duty cycle
   // 50Hz = 20ms (20000us) period
   // Duty cycle = (pulse_width / period) * 65535

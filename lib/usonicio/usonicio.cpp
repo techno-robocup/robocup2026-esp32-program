@@ -1,11 +1,18 @@
 #include "usonicio.hpp"
 
-UltrasonicIO::UltrasonicIO(int _trig, int _echo) : trig(_trig), echo(_echo) {
+UltrasonicIO::UltrasonicIO(int _trig, int _echo) : trig(_trig), echo(_echo), initialized_(false) {}
+
+void UltrasonicIO::init() {
   pinMode(trig, OUTPUT);
   pinMode(echo, INPUT);
+  initialized_ = true;
 }
 
 void UltrasonicIO::readUsonic(long* values) {
+  if (!initialized_) {
+    *values = -1;
+    return;
+  }
   digitalWrite(trig, LOW);
   delayMicroseconds(2);
   digitalWrite(trig, HIGH);

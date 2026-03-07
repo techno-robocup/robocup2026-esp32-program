@@ -13,7 +13,8 @@ ARMIO::ARMIO(const std::int8_t& arm_pulse, const std::int8_t& arm_feedback,
     , wire_sig_channel(9)
     , previous_error(0.0)
     , integral_sum(0.0)
-    , target_position(2048) {}  // Start at middle position
+    , target_position(2048)
+    , initialized_(false) {}  // Start at middle position
 
 ARMIO::ARMIO()
     : arm_pulse_pin(-1)
@@ -23,18 +24,32 @@ ARMIO::ARMIO()
     , wire_sig_channel(-1)
     , target_position(2048)
     , previous_error(0.0)
-    , integral_sum(0.0) {}
+    , integral_sum(0.0)
+    , initialized_(false) {}
 
-void ARMIO::init_pwm() {
+bool ARMIO::init_pwm() {
+  if (arm_pulse_channel < 0 || wire_sig_channel < 0) {
+    initialized_ = false;
+    return false;
+  }
+
   // Configure LEDC for arm servo pulse (50Hz, 16-bit resolution)
-  ledcSetup(arm_pulse_channel, 50, 16);
+  if (ledcSetup(arm_pulse_channel, 50, 16) == 0) {
+    initialized_ = false;
+    return false;
+  }
   ledcAttachPin(arm_pulse_pin, arm_pulse_channel);
 
   // Configure LEDC for wire signal (50Hz, 16-bit resolution)
-  ledcSetup(wire_sig_channel, 50, 16);
+  if (ledcSetup(wire_sig_channel, 50, 16) == 0) {
+    initialized_ = false;
+    return false;
+  }
   ledcAttachPin(wire_sig_pin, wire_sig_channel);
 
   pinMode(arm_feedback_pin, INPUT);
+  initialized_ = true;
+  return true;
 }
 
 int ARMIO::getCurrentPosition() {
@@ -43,6 +58,7 @@ int ARMIO::getCurrentPosition() {
 }
 
 void ARMIO::arm_set_position(const int& position, const bool& enable) {
+  if (!initialized_) return;
   // Clamp position to valid range
   int clamped_position = position;
   if (clamped_position < 0) clamped_position = 0;        // Down
@@ -64,6 +80,7 @@ void ARMIO::arm_set_position(const int& position, const bool& enable) {
 }
 
 void ARMIO::updatePID() {
+  if (!initialized_) return;
   int current_position = getCurrentPosition();
   float error = target_position - current_position;
 

@@ -124,26 +124,43 @@ bool parseArmCommand(const char* message, int* armValue, bool* wire) {
   return true;
 }
 
+void init_with_retry(bool (*init_func)(), int retries = 2, int delay_ms = 100) {
+  for (int i = 0; i < retries; i++) {
+    if (init_func()) return;
+    delay(delay_ms);
+  }
+}
+
 void setup() {
   serial.init();
   pinMode(button_pin, INPUT);
 
-  // Initialize BNO055 sensor
-  bno.init();
+  // Initialize BNO055 sensor (has its own recovery logic in readSensor)
+  if (!bno.init()) {
+    delay(100);
+    bno.init();
+  }
 
-  /*
-  ARGS for xTaskCreatePinnedToCore:
-  - Task function
-  - Task name
-  - Stack size (reduced from 10000 to 2048)
-  - Task parameter
-  - Task priority
-  - Task handle
-  - Core ID
-  */
-  xTaskCreatePinnedToCore(motor_task_func, "MotorTask", 2048, nullptr, 1, &motor_task, 0);
+  // Initialize ultrasonic sensors
+  ultrasonic_1.init();
+  ultrasonic_2.init();
+  ultrasonic_3.init();
+
+  // Initialize motor PWM (deferred from constructor to ensure HAL is ready)
+  init_with_retry([]() { return tyre_1_motor.init_pwm(); });
+  init_with_retry([]() { return tyre_2_motor.init_pwm(); });
+  init_with_retry([]() { return tyre_3_motor.init_pwm(); });
+  init_with_retry([]() { return tyre_4_motor.init_pwm(); });
+
+  // Initialize arm PWM before setting position
+  init_with_retry([]() { return arm.init_pwm(); });
   arm.arm_set_position(2000, false);
-  arm.init_pwm();
+
+  // Create motor task on core 0
+  if (xTaskCreatePinnedToCore(motor_task_func, "MotorTask", 2048, nullptr, 1, &motor_task, 0) != pdPASS) {
+    delay(100);
+    xTaskCreatePinnedToCore(motor_task_func, "MotorTask", 2048, nullptr, 1, &motor_task, 0);
+  }
 }
 
 int ultrasonic_clock = 0;
