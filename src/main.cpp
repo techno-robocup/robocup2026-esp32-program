@@ -157,7 +157,8 @@ void setup() {
   arm.arm_set_position(2000, false);
 
   // Create motor task on core 0
-  if (xTaskCreatePinnedToCore(motor_task_func, "MotorTask", 2048, nullptr, 1, &motor_task, 0) != pdPASS) {
+  if (xTaskCreatePinnedToCore(motor_task_func, "MotorTask", 2048, nullptr, 1, &motor_task, 0) !=
+      pdPASS) {
     delay(100);
     xTaskCreatePinnedToCore(motor_task_func, "MotorTask", 2048, nullptr, 1, &motor_task, 0);
   }
