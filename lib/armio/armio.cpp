@@ -65,6 +65,8 @@ void ARMIO::arm_set_position(const int& position, const bool& enable) {
   if (clamped_position > 4095) clamped_position = 4095;  // Up
 
   target_position = clamped_position;
+  integral_sum = 0;
+  previous_error = 0;
 
   // Convert pulse width in microseconds to PWM duty cycle
   // 50Hz = 20ms (20000us) period
@@ -84,6 +86,11 @@ void ARMIO::updatePID() {
   int current_position = getCurrentPosition();
   float error = target_position - current_position;
 
+  if (abs(error) < 10) {
+    ledcWrite(arm_pulse_channel, 0);
+    return;
+  }
+
   // Deadband: stop if close enough (±20 counts)
   if (error > -20 && error < 20) {
     // Stop motor: 1500µs pulse
@@ -97,7 +104,12 @@ void ARMIO::updatePID() {
 
   // Integral term (accumulate error over time)
   integral_sum += error;
+
+  if (integral_sum > 1000) integral_sum = 1000;
+  if (integral_sum < -1000) integral_sum = -1000;
+
   float integral = ki * integral_sum;
+  integral = ki * integral_sum;
 
   integral = min(1000.0f, max(-1000.0f, integral));  // Clamp integral term to prevent windup
 
