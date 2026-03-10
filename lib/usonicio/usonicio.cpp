@@ -20,12 +20,12 @@ void UltrasonicIO::readUsonic(long* values) {
   digitalWrite(trig, LOW);
   // Add timeout to prevent blocking (max 30ms = ~5 meters)
   long duration = pulseIn(echo, HIGH, 30000);
-  if (duration == 0) {
-    duration = -1;  // Set to max on timeout
-  }
   // Convert to centimeters: (duration * 0.034) / 2
   // Simplified: (duration * 17) / 1000
   duration = (duration * 17) / 1000;
   *values = duration;
+  if (duration == 0) {
+    duration = -1;  // Set to max on timeout
+  }
   return;
 }
