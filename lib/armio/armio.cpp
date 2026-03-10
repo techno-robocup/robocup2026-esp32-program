@@ -49,6 +49,10 @@ bool ARMIO::init_pwm() {
 
   pinMode(arm_feedback_pin, INPUT);
   initialized_ = true;
+
+  int32_t duty = (1500 * 65535) / 20000;
+  ledcWrite(arm_pulse_channel, duty);
+
   return true;
 }
 
@@ -109,7 +113,6 @@ void ARMIO::updatePID() {
   if (integral_sum < -1000) integral_sum = -1000;
 
   float integral = ki * integral_sum;
-  integral = ki * integral_sum;
 
   integral = min(1000.0f, max(-1000.0f, integral));  // Clamp integral term to prevent windup
 
