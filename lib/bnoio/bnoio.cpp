@@ -32,6 +32,7 @@ BNOIO::BNOIO(int sda_pin, int scl_pin)
 bool BNOIO::init() {
   // Initialize I2C bus with specified pins (use standard 400kHz for BNO055)
   Wire.begin(sda_pin_, scl_pin_, 400000);  // 400kHz I2C clock (standard for sensors)
+  Wire.setTimeOut(50);                     // 50ms max per I2C transaction to prevent loop() stall
 
   // Serial.println("[BNO] Attempting bno.begin()...");
   if (!bno.begin()) {
