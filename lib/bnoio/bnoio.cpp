@@ -46,7 +46,7 @@ bool BNOIO::init() {
 
   // Set to IMU mode (accelerometer + gyroscope fusion, no magnetometer)
   // Serial.println("[BNO] Setting operation mode...");
-  bno.setMode(OPERATION_MODE_NDOF);
+  bno.setMode(OPERATION_MODE_IMUPLUS);
 
   // Serial.println("[BNO] Initialization complete!");
   initialized_ = true;
@@ -60,7 +60,7 @@ bool BNOIO::readSensor() {
     return false;
   }
 
-  sensors_event_t orientationData, accelerometerData;
+  sensors_event_t accelerometerData;
   unsigned long now = millis();
 
   // Check if too much time has passed since last successful read
@@ -70,8 +70,8 @@ bool BNOIO::readSensor() {
     return false;
   }
 
-  // Read orientation data
-  bno.getEvent(&orientationData, Adafruit_BNO055::VECTOR_EULER);
+  // Read quaternion for reliable yaw in IMUPLUS mode
+  imu::Quaternion quat = bno.getQuat();
   bno.getEvent(&accelerometerData, Adafruit_BNO055::VECTOR_ACCELEROMETER);
 
   // Check if data is valid (BNO055 returns 0 for all values when communication fails)
@@ -94,10 +94,11 @@ bool BNOIO::readSensor() {
     return false;
   }
 
-  // Data is valid, update cached values
-  heading_ = orientationData.orientation.x;
-  roll_ = orientationData.orientation.y;
-  pitch_ = orientationData.orientation.z;
+  // Compute Euler angles from quaternion
+  double w = quat.w(), x = quat.x(), y = quat.y(), z = quat.z();
+  heading_ = atan2(2.0 * (w * z + x * y), 1.0 - 2.0 * (y * y + z * z)) * 180.0 / M_PI;
+  roll_ = asin(2.0 * (w * y - z * x)) * 180.0 / M_PI;
+  pitch_ = atan2(2.0 * (w * x + y * z), 1.0 - 2.0 * (x * x + y * y)) * 180.0 / M_PI;
 
   accel_x_ = accelerometerData.acceleration.x;
   accel_y_ = accelerometerData.acceleration.y;
